@@ -22,7 +22,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-lg">
+      <header className="border-b border-border/30 bg-card/20 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -30,7 +30,7 @@ const Layout = ({ children }: LayoutProps) => {
               <img 
                 src={genspaceLogo} 
                 alt="GenSpace Logo" 
-                className="w-10 h-10 rounded-lg"
+                className="w-12 h-12"
               />
               <span className="text-2xl font-bold text-glow">GenSpace</span>
             </NavLink>
