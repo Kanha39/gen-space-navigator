@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { Mic, MicIcon } from "lucide-react";
 import { useState } from "react";
+import genspaceLogo from "@/assets/genspace-logo.png";
 
 interface LayoutProps {
   children: ReactNode;
@@ -26,9 +27,11 @@ const Layout = ({ children }: LayoutProps) => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <NavLink to="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-cosmic flex items-center justify-center">
-                <span className="text-white font-bold text-xl">G</span>
-              </div>
+              <img 
+                src={genspaceLogo} 
+                alt="GenSpace Logo" 
+                className="w-10 h-10 rounded-lg"
+              />
               <span className="text-2xl font-bold text-glow">GenSpace</span>
             </NavLink>
 
