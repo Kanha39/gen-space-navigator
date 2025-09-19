@@ -4,6 +4,7 @@ import { Download, FileText } from "lucide-react";
 
 interface ReportPreviewProps {
   selectedStudyIds: string[];
+  selectedStudies?: any[];
 }
 
 const sampleReportData = {
@@ -24,10 +25,36 @@ const sampleReportData = {
   ]
 };
 
-const ReportPreview = ({ selectedStudyIds }: ReportPreviewProps) => {
+const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreviewProps) => {
+  // Generate dynamic insights based on selected studies
+  const generateDynamicFindings = () => {
+    if (selectedStudies.length === 0) return sampleReportData.keyFindings;
+    
+    const findings = [];
+    const species = selectedStudies.map(s => s.species).filter(Boolean);
+    const tissues = selectedStudies.map(s => s.tissue).filter(Boolean);
+    const missions = selectedStudies.map(s => s.mission).filter(Boolean);
+    
+    if (species.length > 0) {
+      findings.push(`Study encompasses ${species.length} different species: ${[...new Set(species)].join(', ')}`);
+    }
+    if (tissues.length > 0) {
+      findings.push(`Analysis covers ${tissues.length} tissue types with focus on ${[...new Set(tissues)].slice(0, 3).join(', ')}`);
+    }
+    if (missions.length > 0) {
+      findings.push(`Data collected from ${[...new Set(missions)].length} different missions including ${[...new Set(missions)].slice(0, 2).join(' and ')}`);
+    }
+    
+    // Add some standard findings
+    findings.push(...sampleReportData.keyFindings.slice(findings.length));
+    
+    return findings.slice(0, 4);
+  };
+
   const reportData = {
     ...sampleReportData,
-    studyCount: selectedStudyIds.length
+    studyCount: selectedStudyIds.length,
+    keyFindings: generateDynamicFindings()
   };
 
   const handleExport = (format: 'pdf' | 'word') => {

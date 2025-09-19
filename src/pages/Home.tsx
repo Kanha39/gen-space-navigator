@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
+import { useStudyContext } from "@/context/StudyContext";
+import { useToast } from "@/hooks/use-toast";
 
 const aiFilters = [
   "Species",
@@ -17,8 +20,11 @@ const aiFilters = [
 ];
 
 const Home = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { searchQuery, activeFilters, setSearchQuery, setActiveFilters, searchStudies } = useStudyContext();
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [resultsCount, setResultsCount] = useState(0);
 
   const toggleFilter = (filter: string) => {
     const newFilters = new Set(activeFilters);
@@ -28,6 +34,36 @@ const Home = () => {
       newFilters.add(filter);
     }
     setActiveFilters(newFilters);
+  };
+
+  // Update search results when query or filters change
+  useEffect(() => {
+    if (searchQuery || activeFilters.size > 0) {
+      const results = searchStudies(searchQuery, activeFilters);
+      setSearchResults(results);
+      setResultsCount(results.length);
+    } else {
+      setSearchResults([]);
+      setResultsCount(0);
+    }
+  }, [searchQuery, activeFilters, searchStudies]);
+
+  const handleViewResults = () => {
+    if (resultsCount > 0) {
+      navigate('/dashboard', { 
+        state: { 
+          searchQuery, 
+          activeFilters: Array.from(activeFilters),
+          filteredResults: searchResults 
+        } 
+      });
+    } else {
+      toast({
+        title: "No Results Found",
+        description: "Try adjusting your search terms or filters",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -102,7 +138,7 @@ const Home = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold">Search Results</h4>
                   <span className="text-sm text-muted-foreground">
-                    {Math.floor(Math.random() * 150) + 50} studies found
+                    {resultsCount} studies found
                   </span>
                 </div>
                 <p className="text-muted-foreground text-left">
@@ -113,7 +149,11 @@ const Home = () => {
                   {activeFilters.size > 0 && ` with ${activeFilters.size} active filters`}
                 </p>
                 <div className="mt-4 pt-4 border-t border-border">
-                  <button className="btn-cosmic w-full md:w-auto">
+                  <button 
+                    onClick={handleViewResults}
+                    className="btn-cosmic w-full md:w-auto hover-scale"
+                    disabled={resultsCount === 0}
+                  >
                     View Detailed Results in Dashboard
                   </button>
                 </div>
