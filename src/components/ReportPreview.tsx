@@ -1,11 +1,42 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, BarChart3, TrendingUp, Users, Zap } from "lucide-react";
+import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import KnowledgeGraph from "@/components/KnowledgeGraph";
+import { exportReport } from "@/utils/reportExport";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReportPreviewProps {
   selectedStudyIds: string[];
   selectedStudies?: any[];
 }
+
+// Sample data for charts and detailed analysis
+const speciesDistribution = [
+  { name: 'Mice', value: 35, count: 87 },
+  { name: 'Plants', value: 28, count: 69 },
+  { name: 'Bacteria', value: 22, count: 54 },
+  { name: 'Cells', value: 15, count: 37 }
+];
+
+const missionTrends = [
+  { year: '2019', studies: 23, success: 91 },
+  { year: '2020', studies: 31, success: 87 },
+  { year: '2021', studies: 45, success: 93 },
+  { year: '2022', studies: 52, success: 89 },
+  { year: '2023', studies: 67, success: 94 }
+];
+
+const tissueAnalysis = [
+  { tissue: 'Muscle', affected: 85, studies: 23 },
+  { tissue: 'Bone', affected: 92, studies: 19 },
+  { tissue: 'Liver', affected: 73, studies: 15 },
+  { tissue: 'Brain', affected: 68, studies: 12 },
+  { tissue: 'Heart', affected: 71, studies: 8 }
+];
+
+const COLORS = ['#8B5CF6', '#06B6D4', '#F59E0B', '#EF4444', '#10B981'];
 
 const sampleReportData = {
   title: "Space Biology Research Analysis Report",
@@ -19,13 +50,34 @@ const sampleReportData = {
   ],
   recommendations: [
     "Implement standardized protocols for metabolic studies in microgravity",
-    "Develop targeted countermeasures for bone density preservation",
+    "Develop targeted countermeasures for bone density preservation", 
     "Investigate cross-species adaptation mechanisms for future applications",
     "Establish monitoring systems for bacterial behavior in space habitats"
-  ]
+  ],
+  methodology: {
+    dataSources: [
+      "NASA Life Sciences Data Archive (NLSDA)",
+      "European Space Agency Biological Database",
+      "International Space Station Research Integration Office",
+      "Commercial Space Research Programs"
+    ],
+    analysisTechniques: [
+      "AI-powered pattern recognition algorithms",
+      "Statistical correlation analysis (p < 0.05)", 
+      "Cross-species comparative genomics",
+      "Temporal trend analysis with machine learning"
+    ],
+    qualityMetrics: {
+      confidence: 94,
+      coverage: 87,
+      reproducibility: 91
+    }
+  }
 };
 
 const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreviewProps) => {
+  const { toast } = useToast();
+  
   // Generate dynamic insights based on selected studies
   const generateDynamicFindings = () => {
     if (selectedStudies.length === 0) return sampleReportData.keyFindings;
@@ -57,9 +109,31 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreview
     keyFindings: generateDynamicFindings()
   };
 
-  const handleExport = (format: 'pdf' | 'word') => {
-    // Placeholder for export functionality
-    console.log(`Exporting report as ${format.toUpperCase()}`);
+  const handleExport = async (format: 'pdf' | 'word' | 'presentation' | 'web') => {
+    try {
+      toast({
+        title: "Export Started",
+        description: `Generating ${format.toUpperCase()} report...`
+      });
+      
+      await exportReport({
+        format: format as any,
+        title: reportData.title,
+        content: `Report with ${reportData.studyCount} studies analyzed`,
+        selectedStudies
+      });
+      
+      toast({
+        title: "Export Complete",
+        description: `Report exported as ${format.toUpperCase()} successfully`
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed", 
+        description: "There was an error exporting the report",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -96,20 +170,95 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreview
         </ul>
       </section>
 
+      {/* Statistical Analysis */}
+      <section>
+        <h2 className="text-xl font-semibold mb-3">Statistical Analysis</h2>
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Species Distribution Chart */}
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h4 className="font-medium mb-3 flex items-center">
+              <BarChart3 className="w-4 h-4 mr-2 text-primary" />
+              Species Distribution
+            </h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={speciesDistribution}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {speciesDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Mission Success Trends */}
+          <div className="bg-card border border-border rounded-lg p-4">
+            <h4 className="font-medium mb-3 flex items-center">
+              <TrendingUp className="w-4 h-4 mr-2 text-primary" />
+              Mission Success Rate
+            </h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={missionTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="success" stroke="#8B5CF6" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Quality Metrics */}
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-blue-600">{sampleReportData.methodology.qualityMetrics.confidence}%</div>
+            <div className="text-sm text-blue-600">Confidence Level</div>
+          </div>
+          <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-green-600">{sampleReportData.methodology.qualityMetrics.coverage}%</div>
+            <div className="text-sm text-green-600">Data Coverage</div>
+          </div>
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-purple-600">{sampleReportData.methodology.qualityMetrics.reproducibility}%</div>
+            <div className="text-sm text-purple-600">Reproducibility</div>
+          </div>
+        </div>
+      </section>
+
       {/* Knowledge Graph Section */}
       <section>
         <h2 className="text-xl font-semibold mb-3">Knowledge Graph Analysis</h2>
-        <div className="bg-muted/20 rounded-lg p-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-cosmic rounded-lg flex items-center justify-center">
-            <div className="grid grid-cols-2 gap-1">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="w-2 h-2 bg-white rounded-full"></div>
-              ))}
-            </div>
-          </div>
-          <p className="text-muted-foreground">
-            Interactive knowledge graph showing relationships between {reportData.studyCount} studies
+        <div className="mb-4">
+          <p className="text-muted-foreground mb-4">
+            Interactive knowledge graph showing relationships between organisms, tissues, conditions, and outcomes across {reportData.studyCount} studies.
           </p>
+          <KnowledgeGraph selectedStudyIds={new Set(selectedStudyIds)} />
+        </div>
+      </section>
+
+      {/* Tissue Impact Analysis */}
+      <section>
+        <h2 className="text-xl font-semibold mb-3">Tissue Impact Analysis</h2>
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={tissueAnalysis}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="tissue" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="affected" fill="#8B5CF6" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </section>
 
@@ -173,7 +322,7 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreview
       </section>
 
       {/* Export Buttons */}
-      <div className="flex justify-center space-x-4 pt-6 border-t border-border">
+      <div className="flex justify-center flex-wrap gap-4 pt-6 border-t border-border">
         <Button
           onClick={() => handleExport('pdf')}
           className="btn-cosmic"
@@ -188,6 +337,22 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreview
         >
           <Download className="w-4 h-4 mr-2" />
           Export as Word
+        </Button>
+        <Button
+          onClick={() => handleExport('presentation')}
+          variant="outline"
+          className="btn-space"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Export as PowerPoint
+        </Button>
+        <Button
+          onClick={() => handleExport('web')}
+          variant="outline"
+          className="btn-space"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export as Web Report
         </Button>
       </div>
     </div>
