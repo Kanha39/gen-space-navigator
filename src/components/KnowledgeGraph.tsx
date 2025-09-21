@@ -98,7 +98,7 @@ const KnowledgeGraph = ({ selectedStudyIds }: KnowledgeGraphProps) => {
             key={node.id}
             className={`absolute graph-node ${isHighlighted ? "graph-node-active" : ""}`}
             style={{
-              left: node.x - 25,
+              left: node.x - 20,
               top: node.y - 25,
               transform: isHighlighted ? "scale(1.1)" : "scale(1)",
             }}
