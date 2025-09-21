@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useConversation } from '@11labs/react';
 import { useNavigate } from 'react-router-dom';
 import { useStudyContext } from './StudyContext';
 import { useToast } from '@/hooks/use-toast';
@@ -70,30 +69,11 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [lastCommand, setLastCommand] = useState('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const navigate = useNavigate();
   const { searchStudies, setSearchQuery } = useStudyContext();
   const { toast } = useToast();
-  
-  const conversation = useConversation({
-    onConnect: () => {
-      toast({
-        title: "Voice Assistant Connected",
-        description: "You can now use voice commands"
-      });
-    },
-    onDisconnect: () => {
-      setIsListening(false);
-    },
-    onError: (error) => {
-      console.error('Voice error:', error);
-      toast({
-        title: "Voice Error",
-        description: "There was an issue with voice recognition",
-        variant: "destructive"
-      });
-    }
-  });
 
   useEffect(() => {
     // Initialize speech recognition
@@ -191,6 +171,11 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       utterance.rate = 0.9;
       utterance.pitch = 1;
       utterance.volume = 0.8;
+      
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      
       speechSynthesis.speak(utterance);
     }
   }, [speechSynthesis, isEnabled]);
@@ -266,7 +251,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isListening,
     isEnabled,
     hasPermission,
-    isSpeaking: conversation.isSpeaking || false,
+    isSpeaking,
     lastCommand,
     startListening,
     stopListening,
