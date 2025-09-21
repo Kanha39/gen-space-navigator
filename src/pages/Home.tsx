@@ -81,7 +81,7 @@ const Home = () => {
           {/* Search Bar */}
           <div className="relative max-w-4xl mx-auto mb-12">
             <div className="relative">
-              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-muted-foreground w-6 h-6" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-primary w-6 h-6 z-10" />
               <Input
                 type="text"
                 placeholder="Search space biology research, experiments, and data..."
