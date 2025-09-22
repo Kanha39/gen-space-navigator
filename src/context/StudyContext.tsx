@@ -142,18 +142,105 @@ export const StudyProvider = ({ children }: { children: ReactNode }) => {
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [filteredStudies, setFilteredStudies] = useState<Study[]>(studies);
 
+  // Keyword mappings for intelligent search
+  const keywordMappings: Record<string, string[]> = {
+    'plant': ['arabidopsis', 'root', 'photosynthesis', 'gravitropic'],
+    'bone': ['skeletal', 'calcium', 'dexa', 'mineral', 'density'],
+    'muscle': ['atrophy', 'protein', 'exercise', 'skeletal muscle', 'degradation'],
+    'dna': ['genetic', 'genomics', 'repair', 'mutations', 'genome'],
+    'bacteria': ['biofilm', 'antibiotic', 'microbiology', 'pseudomonas', 'e. coli'],
+    'radiation': ['cosmic', 'space', 'damage', 'repair', 'mutations'],
+    'microgravity': ['weightlessness', 'zero gravity', 'space', 'gravity'],
+    'space': ['iss', 'mars', 'spaceflight', 'expedition', 'mission'],
+    'health': ['physiology', 'medical', 'countermeasures', 'medicine'],
+    'protein': ['folding', 'synthesis', 'biochemistry', 'proteomics'],
+    'cell': ['culture', 'cellular', 'fibroblasts', 'mammalian'],
+    'human': ['astronaut', 'physiology', 'medical', 'bed rest']
+  };
+
   const searchStudies = (query: string, filters: Set<string>): Study[] => {
     let results = studies;
 
-    // Apply text search
+    // Apply intelligent text search
     if (query.trim()) {
-      const searchTerm = query.toLowerCase();
-      results = results.filter(study => 
-        study.title.toLowerCase().includes(searchTerm) ||
-        study.summary.toLowerCase().includes(searchTerm) ||
-        study.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-        study.mission.toLowerCase().includes(searchTerm)
-      );
+      const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+      
+      results = results.map(study => {
+        let score = 0;
+        let matchesFound = 0;
+
+        // Get all searchable text from the study
+        const searchableFields = [
+          study.title,
+          study.summary,
+          study.mission,
+          study.species || '',
+          study.tissue || '',
+          study.omicsType || '',
+          study.duration || '',
+          study.radiation || '',
+          study.pathway || '',
+          study.outcome || '',
+          study.dataType || '',
+          ...study.tags
+        ].map(field => field.toLowerCase());
+
+        const allSearchableText = searchableFields.join(' ');
+
+        // Search each term
+        searchTerms.forEach(term => {
+          let termMatched = false;
+
+          // Direct exact matches (highest priority)
+          if (study.title.toLowerCase().includes(term)) {
+            score += 100;
+            termMatched = true;
+          } else if (allSearchableText.includes(term)) {
+            score += 50;
+            termMatched = true;
+          }
+
+          // Keyword mapping matches (medium priority)
+          if (!termMatched) {
+            for (const [keyword, synonyms] of Object.entries(keywordMappings)) {
+              if (term.includes(keyword) || keyword.includes(term)) {
+                // Check if any synonyms match
+                const synonymMatch = synonyms.some(synonym => 
+                  allSearchableText.includes(synonym)
+                );
+                if (synonymMatch) {
+                  score += 30;
+                  termMatched = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          // Partial word matches (lower priority)
+          if (!termMatched) {
+            const partialMatches = searchableFields.some(field => 
+              field.split(/\s+/).some(word => 
+                word.startsWith(term) || term.startsWith(word.substring(0, 3))
+              )
+            );
+            if (partialMatches) {
+              score += 10;
+              termMatched = true;
+            }
+          }
+
+          if (termMatched) {
+            matchesFound++;
+          }
+        });
+
+        // Only include studies that match at least one search term
+        return matchesFound > 0 ? { ...study, _searchScore: score } : null;
+      })
+      .filter((study): study is Study & { _searchScore: number } => study !== null)
+      .sort((a, b) => b._searchScore - a._searchScore)
+      .map(({ _searchScore, ...study }) => study);
     }
 
     // Apply filters
