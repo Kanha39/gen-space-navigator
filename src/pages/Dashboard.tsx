@@ -7,11 +7,16 @@ import { Button } from "@/components/ui/button";
 import { useStudyContext } from "@/context/StudyContext";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from "lucide-react";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { studies, searchQuery, activeFilters, setSearchQuery, setActiveFilters } = useStudyContext();
+  const {
+    studies,
+    searchQuery,
+    activeFilters,
+    setSearchQuery,
+    setActiveFilters
+  } = useStudyContext();
   const [selectedStudies, setSelectedStudies] = useState<Set<string>>(new Set());
   const [displayStudies, setDisplayStudies] = useState(studies);
 
@@ -29,7 +34,6 @@ const Dashboard = () => {
       setDisplayStudies(studies);
     }
   }, [location.state, studies, setSearchQuery, setActiveFilters]);
-
   const toggleStudySelection = (studyId: string) => {
     const newSelection = new Set(selectedStudies);
     if (newSelection.has(studyId)) {
@@ -39,24 +43,20 @@ const Dashboard = () => {
     }
     setSelectedStudies(newSelection);
   };
-
   const handleGenerateReport = () => {
     navigate("/reports", {
-      state: { 
+      state: {
         selectedStudyIds: Array.from(selectedStudies),
         selectedStudies: displayStudies.filter(study => selectedStudies.has(study.id))
       }
     });
   };
-
   const clearFilters = () => {
     setSearchQuery('');
     setActiveFilters(new Set());
     setDisplayStudies(studies);
   };
-
-  return (
-    <Layout>
+  return <Layout>
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Research Dashboard</h1>
@@ -65,8 +65,7 @@ const Dashboard = () => {
           </p>
           
           {/* Active Filters Display */}
-          {(searchQuery || activeFilters.size > 0) && (
-            <div className="mt-6 p-4 bg-card/60 backdrop-blur-sm rounded-lg border border-border animate-fade-in">
+          {(searchQuery || activeFilters.size > 0) && <div className="mt-6 p-4 bg-card/60 backdrop-blur-sm rounded-lg border border-border animate-fade-in">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <Filter className="w-4 h-4 text-primary" />
@@ -75,29 +74,21 @@ const Dashboard = () => {
                     {displayStudies.length} results
                   </Badge>
                 </div>
-                <button
-                  onClick={clearFilters}
-                  className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors"
-                >
+                <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground flex items-center space-x-1 transition-colors">
                   <X className="w-3 h-3" />
                   <span>Clear All</span>
                 </button>
               </div>
               
               <div className="flex flex-wrap gap-2">
-                {searchQuery && (
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                {searchQuery && <Badge variant="secondary" className="bg-primary/10 text-primary">
                     Search: "{searchQuery}"
-                  </Badge>
-                )}
-                {Array.from(activeFilters).map(filter => (
-                  <Badge key={filter} variant="secondary" className="bg-accent/10 text-accent">
+                  </Badge>}
+                {Array.from(activeFilters).map(filter => <Badge key={filter} variant="secondary" className="bg-accent/10 text-accent">
                     {filter}
-                  </Badge>
-                ))}
+                  </Badge>)}
               </div>
-            </div>
-          )}
+            </div>}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -111,50 +102,35 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-6 animate-fade-in">
-              {displayStudies.map((study, index) => (
-                <div key={study.id} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-                  <StudyCard
-                    study={study}
-                    isSelected={selectedStudies.has(study.id)}
-                    onToggleSelection={() => toggleStudySelection(study.id)}
-                  />
-                </div>
-              ))}
+              {displayStudies.map((study, index) => <div key={study.id} className="animate-fade-in" style={{
+              animationDelay: `${index * 100}ms`
+            }}>
+                  <StudyCard study={study} isSelected={selectedStudies.has(study.id)} onToggleSelection={() => toggleStudySelection(study.id)} />
+                </div>)}
               
-              {displayStudies.length === 0 && (
-                <div className="text-center py-12">
+              {displayStudies.length === 0 && <div className="text-center py-12">
                   <p className="text-muted-foreground text-lg">No studies match your current filters</p>
-                  <button
-                    onClick={clearFilters}
-                    className="mt-4 btn-cosmic hover-scale"
-                  >
+                  <button onClick={clearFilters} className="mt-4 btn-cosmic hover-scale">
                     Clear Filters
                   </button>
-                </div>
-              )}
+                </div>}
             </div>
           </div>
 
           {/* Right Section - Knowledge Graph */}
-          <div className="cosmic-card h-fit">
+          <div className="cosmic-card h-fit px-px">
             <h2 className="text-xl font-semibold mb-6">Knowledge Graph</h2>
             <KnowledgeGraph selectedStudyIds={selectedStudies} />
             
             {/* Generate Report Button */}
             <div className="mt-6 pt-4 border-t border-border">
-              <Button
-                onClick={handleGenerateReport}
-                disabled={selectedStudies.size === 0}
-                className="w-full btn-cosmic hover-scale transition-all duration-200"
-              >
+              <Button onClick={handleGenerateReport} disabled={selectedStudies.size === 0} className="w-full btn-cosmic hover-scale transition-all duration-200">
                 Generate Report ({selectedStudies.size} studies)
               </Button>
             </div>
           </div>
         </div>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Dashboard;
