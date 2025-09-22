@@ -22,15 +22,15 @@ const nodeTypes = {
 };
 
 const sampleNodes: GraphNode[] = [
-  { id: "n1", label: "Mouse", type: "organism", x: 150, y: 100, connections: ["n2", "n6"] },
-  { id: "n2", label: "Liver", type: "tissue", x: 250, y: 150, connections: ["n1", "n3", "n5"] },
-  { id: "n3", label: "Microgravity", type: "condition", x: 350, y: 100, connections: ["n2", "n4"] },
-  { id: "n4", label: "Metabolism", type: "outcome", x: 450, y: 150, connections: ["n3", "n5"] },
-  { id: "n5", label: "Glucose Pathway", type: "pathway", x: 300, y: 250, connections: ["n2", "n4"] },
-  { id: "n6", label: "Arabidopsis", type: "organism", x: 100, y: 200, connections: ["n1", "n7"] },
-  { id: "n7", label: "Roots", type: "tissue", x: 200, y: 300, connections: ["n6", "n8"] },
-  { id: "n8", label: "Radiation", type: "condition", x: 400, y: 280, connections: ["n7", "n9"] },
-  { id: "n9", label: "DNA Repair", type: "pathway", x: 450, y: 350, connections: ["n8"] },
+  { id: "n1", label: "Mouse", type: "organism", x: 120, y: 80, connections: ["n2", "n6"] },
+  { id: "n2", label: "Liver", type: "tissue", x: 200, y: 120, connections: ["n1", "n3", "n5"] },
+  { id: "n3", label: "Microgravity", type: "condition", x: 280, y: 80, connections: ["n2", "n4"] },
+  { id: "n4", label: "Metabolism", type: "outcome", x: 360, y: 120, connections: ["n3", "n5"] },
+  { id: "n5", label: "Glucose Pathway", type: "pathway", x: 240, y: 200, connections: ["n2", "n4"] },
+  { id: "n6", label: "Arabidopsis", type: "organism", x: 80, y: 160, connections: ["n1", "n7"] },
+  { id: "n7", label: "Roots", type: "tissue", x: 160, y: 240, connections: ["n6", "n8"] },
+  { id: "n8", label: "Radiation", type: "condition", x: 320, y: 220, connections: ["n7", "n9"] },
+  { id: "n9", label: "DNA Repair", type: "pathway", x: 360, y: 280, connections: ["n8"] },
 ];
 
 const KnowledgeGraph = ({ selectedStudyIds }: KnowledgeGraphProps) => {
