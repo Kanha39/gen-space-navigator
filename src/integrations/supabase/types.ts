@@ -14,11 +14,139 @@ export type Database = {
   }
   public: {
     Tables: {
-      Studies: {
+      nodes: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          node_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          node_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          node_type?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      relationships: {
+        Row: {
+          created_at: string
+          id: string
+          relation_type: string
+          source_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          relation_type: string
+          source_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          relation_type?: string
+          source_id?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationships_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationships_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_history: {
+        Row: {
+          configuration: Json | null
+          content: string
+          created_at: string
+          file_url: string | null
+          format: string
+          id: string
+          selected_study_ids: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          configuration?: Json | null
+          content: string
+          created_at?: string
+          file_url?: string | null
+          format: string
+          id?: string
+          selected_study_ids?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          configuration?: Json | null
+          content?: string
+          created_at?: string
+          file_url?: string | null
+          format?: string
+          id?: string
+          selected_study_ids?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      studies: {
         Row: {
           condition: string | null
+          created_at: string
+          document_tsv: unknown | null
           duration: string | null
-          id: number
+          id: string
           mission: string
           omics_type: string | null
           outcome: string | null
@@ -31,8 +159,10 @@ export type Database = {
         }
         Insert: {
           condition?: string | null
+          created_at?: string
+          document_tsv?: unknown | null
           duration?: string | null
-          id?: number
+          id?: string
           mission: string
           omics_type?: string | null
           outcome?: string | null
@@ -45,8 +175,10 @@ export type Database = {
         }
         Update: {
           condition?: string | null
+          created_at?: string
+          document_tsv?: unknown | null
           duration?: string | null
-          id?: number
+          id?: string
           mission?: string
           omics_type?: string | null
           outcome?: string | null
@@ -64,7 +196,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_relationships_with_labels: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          relation_type: string
+          relationship_id: string
+          source_label: string
+          source_type: string
+          target_label: string
+          target_type: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
