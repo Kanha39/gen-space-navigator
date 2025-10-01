@@ -9,10 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, Download, Settings, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Reports = () => {
   const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const selectedStudyIds = location.state?.selectedStudyIds || [];
   const selectedStudies = location.state?.selectedStudies || [];
   const [showPreview, setShowPreview] = useState(false);
@@ -33,7 +36,51 @@ const Reports = () => {
     });
   };
 
-  const handleExportReport = (format: string) => {
+  const saveReportToHistory = async (title: string, content: string, format: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save reports to history",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("report_history")
+        .insert({
+          user_id: user.id,
+          title,
+          content,
+          configuration: reportSections,
+          format,
+          selected_study_ids: selectedStudyIds,
+        });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Report Saved",
+        description: "Report has been saved to your history",
+      });
+    } catch (error: any) {
+      console.error("Failed to save report:", error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save report to history",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleExportReport = async (format: string) => {
+    const title = `Space Biology Research Report - ${new Date().toLocaleDateString()}`;
+    const content = `Report analyzing ${selectedStudies.length} studies`;
+    
+    // Save to history
+    await saveReportToHistory(title, content, format);
+    
     toast({
       title: "Export Started",
       description: `Your report is being generated as ${format.toUpperCase()}. You'll be notified when it's ready.`,
@@ -153,6 +200,7 @@ const Reports = () => {
                 <ReportPreview 
                   selectedStudyIds={selectedStudyIds}
                   selectedStudies={selectedStudies}
+                  onReportSaved={saveReportToHistory}
                 />
               </DialogContent>
             </Dialog>

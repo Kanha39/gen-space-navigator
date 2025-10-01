@@ -1,8 +1,11 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import spaceBiologyHero from "@/assets/space-biology-hero.jpg";
 
 const About = () => {
+  const navigate = useNavigate();
+  
   return (
     <Layout>
       <div className="container mx-auto px-6 py-16">
@@ -139,7 +142,10 @@ const About = () => {
             <p className="mb-6">
               Join the next generation of space biology research with GenSpace
             </p>
-            <Button className="bg-white text-primary hover:bg-gray-100">
+            <Button 
+              className="bg-white text-primary hover:bg-gray-100"
+              onClick={() => navigate("/")}
+            >
               Start Your Research Journey
             </Button>
           </div>

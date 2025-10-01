@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 interface ReportPreviewProps {
   selectedStudyIds: string[];
   selectedStudies?: any[];
+  onReportSaved?: (title: string, content: string, format: string) => Promise<void>;
 }
 
 // Sample data for charts and detailed analysis
@@ -75,7 +76,7 @@ const sampleReportData = {
   }
 };
 
-const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreviewProps) => {
+const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }: ReportPreviewProps) => {
   const { toast } = useToast();
   
   // Generate dynamic insights based on selected studies
@@ -122,6 +123,15 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [] }: ReportPreview
         content: `Report with ${reportData.studyCount} studies analyzed`,
         selectedStudies
       });
+      
+      // Save to history if callback provided
+      if (onReportSaved) {
+        await onReportSaved(
+          reportData.title,
+          `Report analyzing ${reportData.studyCount} studies`,
+          format
+        );
+      }
       
       toast({
         title: "Export Complete",
