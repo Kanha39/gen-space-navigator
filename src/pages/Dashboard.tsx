@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useStudyContext } from "@/context/StudyContext";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,6 +57,27 @@ const Dashboard = () => {
     setSearchQuery('');
     setActiveFilters(new Set());
     setDisplayStudies(studies);
+  };
+
+  const handleCallBiospecimens = async () => {
+    try {
+      toast.loading('Calling biospecimens API...');
+      
+      const { data, error } = await supabase.functions.invoke('biospecimens', {
+        body: { 
+          action: 'fetch_biospecimens',
+          timestamp: new Date().toISOString() 
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Biospecimens API called successfully!');
+      console.log('Response:', data);
+    } catch (error) {
+      console.error('Error calling biospecimens API:', error);
+      toast.error('Failed to call biospecimens API');
+    }
   };
   return <Layout>
       <div className="container mx-auto px-6 py-8">
@@ -123,9 +146,13 @@ const Dashboard = () => {
             <KnowledgeGraph selectedStudyIds={selectedStudies} />
             
             {/* Generate Report Button */}
-            <div className="mt-6 pt-4 border-t border-border">
+            <div className="mt-6 pt-4 border-t border-border space-y-3">
               <Button onClick={handleGenerateReport} disabled={selectedStudies.size === 0} className="w-full btn-cosmic hover-scale transition-all duration-200">
                 Generate Report ({selectedStudies.size} studies)
+              </Button>
+              
+              <Button onClick={handleCallBiospecimens} variant="outline" className="w-full">
+                Call External API
               </Button>
             </div>
           </div>
