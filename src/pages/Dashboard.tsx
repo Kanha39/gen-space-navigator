@@ -60,9 +60,9 @@ const Dashboard = () => {
   };
 
   const handleCallBiospecimens = async () => {
+    const toastId = toast.loading('Calling biospecimens API...');
+    
     try {
-      toast.loading('Calling biospecimens API...');
-      
       const { data, error } = await supabase.functions.invoke('biospecimens', {
         body: { 
           action: 'fetch_biospecimens',
@@ -72,10 +72,12 @@ const Dashboard = () => {
 
       if (error) throw error;
 
+      toast.dismiss(toastId);
       toast.success('Biospecimens API called successfully!');
       console.log('Response:', data);
     } catch (error) {
       console.error('Error calling biospecimens API:', error);
+      toast.dismiss(toastId);
       toast.error('Failed to call biospecimens API');
     }
   };

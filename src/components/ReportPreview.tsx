@@ -6,6 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import KnowledgeGraph from "@/components/KnowledgeGraph";
 import { exportReport } from "@/utils/reportExport";
 import { useToast } from "@/hooks/use-toast";
+import { generateReportHTML } from "@/utils/generateReportContent";
 
 interface ReportPreviewProps {
   selectedStudyIds: string[];
@@ -117,10 +118,19 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
         description: `Generating ${format.toUpperCase()} report...`
       });
       
+      // Generate full HTML content
+      const fullContent = generateReportHTML({
+        title: reportData.title,
+        studyCount: reportData.studyCount,
+        keyFindings: reportData.keyFindings,
+        recommendations: reportData.recommendations,
+        selectedStudies
+      });
+      
       await exportReport({
         format: format as any,
         title: reportData.title,
-        content: `Report with ${reportData.studyCount} studies analyzed`,
+        content: fullContent,
         selectedStudies
       });
       
@@ -128,7 +138,7 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
       if (onReportSaved) {
         await onReportSaved(
           reportData.title,
-          `Report analyzing ${reportData.studyCount} studies`,
+          fullContent,
           format
         );
       }

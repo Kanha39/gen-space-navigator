@@ -11,6 +11,7 @@ import { FileText, Download, Settings, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { generateReportHTML } from "@/utils/generateReportContent";
 
 const Reports = () => {
   const location = useLocation();
@@ -76,10 +77,32 @@ const Reports = () => {
 
   const handleExportReport = async (format: string) => {
     const title = `Space Biology Research Report - ${new Date().toLocaleDateString()}`;
-    const content = `Report analyzing ${selectedStudies.length} studies`;
+    
+    // Generate full report content
+    const keyFindings = [
+      "Microgravity significantly affects cellular metabolism across multiple species",
+      "Plant species show remarkable adaptation mechanisms to space radiation",
+      "Bone density changes follow predictable patterns during extended missions",
+      "Bacterial biofilm formation exhibits enhanced antibiotic resistance in space"
+    ];
+    
+    const recommendations = [
+      "Implement standardized protocols for metabolic studies in microgravity",
+      "Develop targeted countermeasures for bone density preservation",
+      "Investigate cross-species adaptation mechanisms for future applications",
+      "Establish monitoring systems for bacterial behavior in space habitats"
+    ];
+    
+    const fullContent = generateReportHTML({
+      title,
+      studyCount: selectedStudies.length,
+      keyFindings,
+      recommendations,
+      selectedStudies
+    });
     
     // Save to history
-    await saveReportToHistory(title, content, format);
+    await saveReportToHistory(title, fullContent, format);
     
     toast({
       title: "Export Started",

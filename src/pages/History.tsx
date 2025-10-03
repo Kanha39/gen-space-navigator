@@ -15,6 +15,7 @@ interface ReportHistory {
   format: string;
   created_at: string;
   selected_study_ids: string[];
+  content: string;
 }
 
 const History = () => {
@@ -32,7 +33,7 @@ const History = () => {
     try {
       const { data, error } = await supabase
         .from("report_history")
-        .select("id, title, format, created_at, selected_study_ids")
+        .select("id, title, format, created_at, selected_study_ids, content")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -113,11 +114,37 @@ const History = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
+                    <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
                         {report.selected_study_ids?.length || 0} studies included
                       </p>
-                      <div className="flex gap-2">
+                      
+                      {/* Report Preview */}
+                      {report.content && (
+                        <div 
+                          className="border border-border rounded-lg p-4 max-h-48 overflow-y-auto bg-muted/20"
+                          dangerouslySetInnerHTML={{ __html: report.content.substring(0, 500) + '...' }}
+                        />
+                      )}
+                      
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const blob = new Blob([report.content], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${report.title.replace(/[^a-z0-9]/gi, '_')}.html`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            toast.success('Report downloaded');
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
