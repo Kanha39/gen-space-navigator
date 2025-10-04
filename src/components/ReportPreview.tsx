@@ -11,7 +11,7 @@ import { generateReportHTML } from "@/utils/generateReportContent";
 interface ReportPreviewProps {
   selectedStudyIds: string[];
   selectedStudies?: any[];
-  onReportSaved?: (title: string, content: string, format: string) => Promise<void>;
+  onReportSaved?: (title: string, content: string, format: string) => Promise<boolean>;
 }
 
 // Sample data for charts and detailed analysis
@@ -113,6 +113,9 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
 
   const handleExport = async (format: 'pdf' | 'word' | 'presentation' | 'web') => {
     try {
+      console.log("=== REPORT PREVIEW EXPORT ===");
+      console.log("Format:", format);
+      
       toast({
         title: "Export Started",
         description: `Generating ${format.toUpperCase()} report...`
@@ -127,6 +130,8 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
         selectedStudies
       });
       
+      console.log("Generated content length:", fullContent.length);
+      
       await exportReport({
         format: format as any,
         title: reportData.title,
@@ -135,19 +140,25 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
       });
       
       // Save to history if callback provided
+      let saved = false;
       if (onReportSaved) {
-        await onReportSaved(
+        console.log("Calling onReportSaved callback...");
+        saved = await onReportSaved(
           reportData.title,
           fullContent,
           format
         );
+        console.log("Save result:", saved);
       }
       
       toast({
         title: "Export Complete",
-        description: `Report exported as ${format.toUpperCase()} successfully`
+        description: saved 
+          ? `Report exported as ${format.toUpperCase()} and saved to history`
+          : `Report exported as ${format.toUpperCase()}`
       });
     } catch (error) {
+      console.error("Export error:", error);
       toast({
         title: "Export Failed", 
         description: "There was an error exporting the report",

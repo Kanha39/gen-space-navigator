@@ -37,18 +37,43 @@ const Reports = () => {
     });
   };
 
-  const saveReportToHistory = async (title: string, content: string, format: string) => {
+  const saveReportToHistory = async (title: string, content: string, format: string): Promise<boolean> => {
+    console.log("=== SAVE REPORT DEBUG ===");
+    console.log("1. User authenticated:", !!user);
+    console.log("2. User ID:", user?.id);
+    console.log("3. Selected Study IDs:", selectedStudyIds);
+    console.log("4. Study IDs type:", typeof selectedStudyIds[0]);
+    console.log("5. Title:", title);
+    console.log("6. Format:", format);
+    console.log("7. Content length:", content?.length);
+    
     if (!user) {
+      console.error("❌ No user authenticated");
       toast({
         title: "Authentication Required",
         description: "Please sign in to save reports to history",
         variant: "destructive"
       });
-      return;
+      return false;
+    }
+
+    // Validate study IDs are UUIDs
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const invalidIds = selectedStudyIds.filter(id => !uuidPattern.test(id));
+    
+    if (invalidIds.length > 0) {
+      console.error("❌ Invalid UUID format for study IDs:", invalidIds);
+      toast({
+        title: "Invalid Study IDs",
+        description: "Some study IDs are not in valid UUID format",
+        variant: "destructive"
+      });
+      return false;
     }
 
     try {
-      const { error } = await supabase
+      console.log("8. Inserting into database...");
+      const { data, error } = await supabase
         .from("report_history")
         .insert({
           user_id: user.id,
@@ -57,25 +82,41 @@ const Reports = () => {
           configuration: reportSections,
           format,
           selected_study_ids: selectedStudyIds,
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      console.log("9. Database response:", { data, error });
+
+      if (error) {
+        console.error("❌ Database error:", error);
+        throw error;
+      }
       
+      console.log("✅ Report saved successfully!");
       toast({
         title: "Report Saved",
         description: "Report has been saved to your history",
       });
+      return true;
     } catch (error: any) {
-      console.error("Failed to save report:", error);
+      console.error("❌ Failed to save report:", error);
+      console.error("Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
       toast({
         title: "Save Failed",
-        description: "Failed to save report to history",
+        description: error.message || "Failed to save report to history",
         variant: "destructive"
       });
+      return false;
     }
   };
 
   const handleExportReport = async (format: string) => {
+    console.log("=== EXPORT REPORT STARTED ===");
     const title = `Space Biology Research Report - ${new Date().toLocaleDateString()}`;
     
     // Generate full report content
@@ -101,13 +142,50 @@ const Reports = () => {
       selectedStudies
     });
     
-    // Save to history
-    await saveReportToHistory(title, fullContent, format);
+    // Save to history and wait for result
+    const saved = await saveReportToHistory(title, fullContent, format);
     
-    toast({
-      title: "Export Started",
-      description: `Your report is being generated as ${format.toUpperCase()}. You'll be notified when it's ready.`,
+    if (saved) {
+      toast({
+        title: "Export Complete",
+        description: `Report exported as ${format.toUpperCase()} and saved to history`,
+      });
+    } else {
+      toast({
+        title: "Export Warning",
+        description: `Report generated but not saved to history`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveReport = async () => {
+    console.log("=== DIRECT SAVE CLICKED ===");
+    const title = `Space Biology Research Report - ${new Date().toLocaleDateString()}`;
+    
+    const keyFindings = [
+      "Microgravity significantly affects cellular metabolism across multiple species",
+      "Plant species show remarkable adaptation mechanisms to space radiation",
+      "Bone density changes follow predictable patterns during extended missions",
+      "Bacterial biofilm formation exhibits enhanced antibiotic resistance in space"
+    ];
+    
+    const recommendations = [
+      "Implement standardized protocols for metabolic studies in microgravity",
+      "Develop targeted countermeasures for bone density preservation",
+      "Investigate cross-species adaptation mechanisms for future applications",
+      "Establish monitoring systems for bacterial behavior in space habitats"
+    ];
+    
+    const fullContent = generateReportHTML({
+      title,
+      studyCount: selectedStudies.length,
+      keyFindings,
+      recommendations,
+      selectedStudies
     });
+    
+    await saveReportToHistory(title, fullContent, 'pdf');
   };
 
   return (
@@ -196,7 +274,7 @@ const Reports = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center space-x-4 mb-8">
+          <div className="flex justify-center flex-wrap gap-4 mb-8">
             <Dialog open={showPreview} onOpenChange={setShowPreview}>
               <DialogTrigger asChild>
                 <Button 
@@ -227,6 +305,15 @@ const Reports = () => {
                 />
               </DialogContent>
             </Dialog>
+
+            <Button 
+              onClick={handleSaveReport}
+              className="btn-space hover-scale"
+              disabled={selectedStudyIds.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Save Report to History
+            </Button>
 
             <Button 
               onClick={handleSaveConfiguration}
