@@ -42,6 +42,15 @@ const exportToPDF = async (title: string, content: string): Promise<void> => {
   const lineHeight = 7;
   let yPosition = margin;
 
+  // Strip HTML tags from content
+  const stripHtml = (html: string): string => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
+  const plainTextContent = stripHtml(content);
+
   // Add title
   pdf.setFontSize(20);
   pdf.setFont(undefined, 'bold');
@@ -54,9 +63,9 @@ const exportToPDF = async (title: string, content: string): Promise<void> => {
   pdf.text(`Generated on ${new Date().toLocaleDateString()}`, margin, yPosition);
   yPosition += lineHeight * 2;
 
-  // Add content (simplified text extraction)
+  // Add content as plain text
   pdf.setFontSize(11);
-  const lines = pdf.splitTextToSize(content, pageWidth - (margin * 2));
+  const lines = pdf.splitTextToSize(plainTextContent, pageWidth - (margin * 2));
   
   lines.forEach((line: string) => {
     if (yPosition > pageHeight - margin) {
