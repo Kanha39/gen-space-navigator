@@ -33,7 +33,7 @@ const StudyContext = createContext<StudyContextType | undefined>(undefined);
 // Extended sample data with filter properties
 const sampleStudies: Study[] = [
   {
-    id: '1',
+    id: 'a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6',
     title: 'Microgravity Effects on Arabidopsis Root Development',
     year: '2023',
     mission: 'ISS Expedition 68',
@@ -50,7 +50,7 @@ const sampleStudies: Study[] = [
     dataType: 'RNA-seq'
   },
   {
-    id: '2',
+    id: 'b2c3d4e5-f6a7-48b9-c0d1-e2f3a4b5c6d7',
     title: 'Protein Folding in Simulated Martian Environment',
     year: '2022',
     mission: 'Mars Simulation Chamber',
@@ -67,7 +67,7 @@ const sampleStudies: Study[] = [
     dataType: 'Mass Spectrometry'
   },
   {
-    id: '3',
+    id: 'c3d4e5f6-a7b8-49c0-d1e2-f3a4b5c6d7e8',
     title: 'Bone Density Changes in Long-Duration Spaceflight',
     year: '2023',
     mission: 'ISS Year-Long Mission',
@@ -84,7 +84,7 @@ const sampleStudies: Study[] = [
     dataType: 'DEXA Scan'
   },
   {
-    id: '4',
+    id: 'd4e5f6a7-b8c9-40d1-e2f3-a4b5c6d7e8f9',
     title: 'Bacterial Biofilm Formation in Microgravity',
     year: '2022',
     mission: 'SpaceX CRS-24',
@@ -101,7 +101,7 @@ const sampleStudies: Study[] = [
     dataType: 'Whole Genome Sequencing'
   },
   {
-    id: '5',
+    id: 'e5f6a7b8-c9d0-41e2-f3a4-b5c6d7e8f9a0',
     title: 'Muscle Atrophy Mechanisms in Simulated Weightlessness',
     year: '2023',
     mission: 'Bed Rest Study',
@@ -118,7 +118,7 @@ const sampleStudies: Study[] = [
     dataType: 'RNA-seq'
   },
   {
-    id: '6',
+    id: 'f6a7b8c9-d0e1-42f3-a4b5-c6d7e8f9a0b1',
     title: 'Radiation Effects on DNA Repair in Mammalian Cells',
     year: '2022',
     mission: 'Ground-Based Simulation',

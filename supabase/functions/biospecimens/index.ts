@@ -6,8 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const NASA_API_KEY = Deno.env.get('NASA_API_KEY');
+const NASA_API_URL = 'https://osdr.nasa.gov/osdr/data/osd/files/';
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -18,12 +20,33 @@ serve(async (req) => {
     const body = await req.json();
     console.log('Request body:', body);
 
-    // Process the request and return response
+    // Fetch real data from NASA OSDR API
+    console.log('Fetching biospecimens data from NASA...');
+    
+    const response = await fetch(`${NASA_API_URL}?key=${NASA_API_KEY}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      console.error('NASA API error:', response.status, response.statusText);
+      throw new Error(`NASA API returned ${response.status}: ${response.statusText}`);
+    }
+
+    const nasaData = await response.json();
+    console.log('NASA API response received:', nasaData);
+
     const responseData = {
       success: true,
-      message: 'Biospecimens API called successfully',
-      data: body,
-      timestamp: new Date().toISOString()
+      message: 'Biospecimens data fetched successfully from NASA',
+      data: nasaData,
+      metadata: {
+        source: 'NASA Open Science Data Repository',
+        timestamp: new Date().toISOString(),
+        requestBody: body
+      }
     };
 
     return new Response(
@@ -38,7 +61,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message 
+        error: error.message,
+        details: 'Failed to fetch data from NASA API. Please check API key and endpoint.'
       }),
       {
         status: 500,
