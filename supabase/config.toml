@@ -1,1 +1,7 @@
 project_id = "njxovjewlswdnbjvcsba"
+
+[functions.biospecimens]
+verify_jwt = false
+
+[functions.edit-report]
+verify_jwt = false

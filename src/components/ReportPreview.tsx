@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, BarChart3, TrendingUp, Users, Zap } from "lucide-react";
+import { Download, FileText, BarChart3, TrendingUp, Users, Zap, Sparkles } from "lucide-react";
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import KnowledgeGraph from "@/components/KnowledgeGraph";
 import { exportReport } from "@/utils/reportExport";
 import { useToast } from "@/hooks/use-toast";
 import { generateReportHTML } from "@/utils/generateReportContent";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface ReportPreviewProps {
   selectedStudyIds: string[];
@@ -79,6 +81,8 @@ const sampleReportData = {
 
 const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }: ReportPreviewProps) => {
   const { toast } = useToast();
+  const [isEditingWithAI, setIsEditingWithAI] = useState(false);
+  const [editedReport, setEditedReport] = useState<string | null>(null);
   
   // Generate dynamic insights based on selected studies
   const generateDynamicFindings = () => {
@@ -164,6 +168,49 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
         description: "There was an error exporting the report",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleAIEdit = async () => {
+    try {
+      setIsEditingWithAI(true);
+      
+      toast({
+        title: "AI Editor Started",
+        description: "Enhancing your report with AI..."
+      });
+
+      // Generate the current report text
+      const reportText = generateReportHTML({
+        title: reportData.title,
+        studyCount: reportData.studyCount,
+        keyFindings: reportData.keyFindings,
+        recommendations: reportData.recommendations,
+        selectedStudies
+      });
+
+      const { data, error } = await supabase.functions.invoke('edit-report', {
+        body: { reportText }
+      });
+
+      if (error) throw error;
+
+      if (data?.editedText) {
+        setEditedReport(data.editedText);
+        toast({
+          title: "✅ Report Enhanced!",
+          description: "Your report has been professionally edited by AI",
+        });
+      }
+    } catch (error) {
+      console.error("AI edit error:", error);
+      toast({
+        title: "AI Edit Failed",
+        description: "There was an error editing the report with AI",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEditingWithAI(false);
     }
   };
 
@@ -352,11 +399,43 @@ const ReportPreview = ({ selectedStudyIds, selectedStudies = [], onReportSaved }
         </div>
       </section>
 
+      {/* AI Edited Report Preview */}
+      {editedReport && (
+        <section className="bg-accent/10 border-2 border-accent rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <Sparkles className="w-5 h-5 mr-2 text-accent" />
+              AI-Enhanced Report
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditedReport(null)}
+            >
+              Show Original
+            </Button>
+          </div>
+          <div 
+            className="prose prose-sm max-w-none text-foreground"
+            dangerouslySetInnerHTML={{ __html: editedReport }}
+          />
+        </section>
+      )}
+
       {/* Export Buttons */}
       <div className="flex justify-center flex-wrap gap-4 pt-6 border-t border-border">
         <Button
-          onClick={() => handleExport('pdf')}
+          onClick={handleAIEdit}
+          disabled={isEditingWithAI}
           className="btn-cosmic"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          {isEditingWithAI ? "Editing..." : "AI Edit Report"}
+        </Button>
+        <Button
+          onClick={() => handleExport('pdf')}
+          variant="outline"
+          className="btn-space"
         >
           <FileText className="w-4 h-4 mr-2" />
           Export as PDF
